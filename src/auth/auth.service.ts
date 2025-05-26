@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
@@ -13,7 +14,10 @@ export class AuthService {
   /* 인메모리 사용자 배열 */
   private users: User[] = []
 
-  constructor(private readonly jwtService: JwtService) { }
+  constructor(
+    private configService: ConfigService,
+    private readonly jwtService: JwtService
+  ) { }
 
   async signup(userName: string, password: string) {
     const exists = this.users.find(u => u.userName === userName)
@@ -41,7 +45,7 @@ export class AuthService {
 
   async login(user: User) {
     const payload = { sub: user.id, userName: user.userName };
-    const token = this.jwtService.sign(payload, {secret: "exampleSecret"});
+    const token = this.jwtService.sign(payload, {secret: this.configService.get<string>('JWT_SECRET')});
     return token;
   }
   findUserById(id: number) {
